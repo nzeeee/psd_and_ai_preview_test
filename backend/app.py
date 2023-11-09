@@ -28,26 +28,26 @@ def is_psd_file(filepath):
         return False
 
 def process_psd_file(filepath):
-    """ PSDファイルを開いてPNGに変換 """
+    """ PSDファイルをPNGに変換 """
     psd = PSDImage.open(filepath)
     image = psd.composite()
     if image.mode == 'CMYK':
         image = image.convert('RGB')
 
-    # PNGファイル名の生成
-    png_filename = os.path.basename(filepath).rsplit('.', 1)[0] + '.png'
+    base_filename = os.path.splitext(os.path.basename(filepath))[0]
+    png_filename = base_filename + '.png'
     png_filepath = os.path.join(app.config['UPLOAD_FOLDER'], png_filename)
     image.save(png_filepath, format='PNG')
     
-    return png_filename  # パスではなくファイル名のみを返す
-
+    return png_filename  # ファイル名のみを返す
+    
 def process_ai_file(filepath):
     """ AIファイルをPNGに変換 """
     base_filename = os.path.splitext(os.path.basename(filepath))[0]
     png_filename = base_filename + '.png'
     png_filepath = os.path.join(app.config['UPLOAD_FOLDER'], png_filename)
     subprocess.run(["convert", filepath, png_filepath])
-    return png_filename  # パスではなくファイル名のみを返す
+    return png_filename  # ファイル名のみを返す
 
 @app.route('/')
 def index():
@@ -70,11 +70,9 @@ def upload_file():
         file.save(filepath)
 
         file_ext = filename.rsplit('.', 1)[1].lower()
-        if file_ext in ['psd'] and is_psd_file(filepath):
-            image = process_psd_file(filepath)
-            png_filename = filename + '.png'
-            png_filepath = os.path.join(app.config['UPLOAD_FOLDER'], png_filename)
-            image.save(png_filepath, format='PNG')
+        
+        if file_ext == 'psd' and is_psd_file(filepath):
+            png_filename = process_psd_file(filepath)
             return jsonify({'uploaded_file_path': url_for('uploaded_file', filename=png_filename)})
 
         elif file_ext == 'ai':

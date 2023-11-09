@@ -1,3 +1,9 @@
-# test
+## Usage
 
-Describe your project here.
+imagemagic,[rye](https://rye-up.com/)
+
+'''
+rye sync 
+cd backend 
+python app.py
+'''
